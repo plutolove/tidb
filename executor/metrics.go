@@ -279,7 +279,7 @@ const (
 	attrJoin      = "Join"
 	attrApply     = "Apply"
 	attrLimit     = "Limit"
-	attrOrder     = "Desc"
+	attrOrder     = "Order"
 	attrAggregate = "Agg"
 )
 

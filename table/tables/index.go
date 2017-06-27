@@ -145,7 +145,6 @@ func (c *index) GenIndexKey(indexedValues []types.Datum, h int64) (key []byte, d
 	for i, column := range c.idxInfo.Columns {
 		if column.Desc {
 			codec.ReverseComparableDatum(&indexedValues[i])
-			break
 		}
 	}
 

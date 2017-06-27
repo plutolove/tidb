@@ -294,7 +294,6 @@ func (e *IndexLookUpExecutor) Open() error {
 	for i, column := range e.index.Columns {
 		if column.Desc {
 			descIndex = append(descIndex, i)
-			break
 		}
 	}
 

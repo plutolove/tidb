@@ -554,6 +554,7 @@ func (h *rpcHandler) getIndexRowFromRange(ctx *selectContext, ran kv.KeyRange, l
 	for _, c := range idxInfo.Columns {
 		if c.GetDesc() {
 			ctx.descScan = !ctx.descScan
+			break
 		}
 	}
 

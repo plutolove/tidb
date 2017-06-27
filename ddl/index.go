@@ -116,7 +116,7 @@ func buildIndexColumns(columns []*model.ColumnInfo, idxColNames []*ast.IndexColN
 			Name:   col.Name,
 			Offset: col.Offset,
 			Length: ic.Length,
-			Desc:   ic.Order,
+			Desc:   ic.Desc,
 		})
 	}
 

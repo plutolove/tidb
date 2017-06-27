@@ -84,6 +84,12 @@ func (c *indexIter) Next() (val []types.Datum, h int64, err error) {
 		}
 		val = vv
 	}
+	for i, c := range c.idx.idxInfo.Columns {
+		if c.Desc {
+			codec.ReverseComparableDatum(&val[i])
+		}
+	}
+
 	// update new iter to next
 	err = c.it.Next()
 	if err != nil {

@@ -550,6 +550,13 @@ func (h *rpcHandler) getIndexRowFromRange(ctx *selectContext, ran kv.KeyRange, l
 	if (*limit) == 0 || bytes.Compare(startKey, endKey) >= 0 {
 		return nil, nil
 	}
+
+	for _, c := range idxInfo.Columns {
+		if c.GetDesc() {
+			ctx.descScan = !ctx.descScan
+		}
+	}
+
 	var seekKey kv.Key
 	if ctx.descScan {
 		seekKey = endKey

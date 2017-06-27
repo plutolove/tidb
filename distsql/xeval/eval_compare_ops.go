@@ -303,11 +303,6 @@ func (e *Evaluator) decodeValueList(valueListExpr *tipb.Expr) (*decodedValueList
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	for i, column := range e.ColumnInfos {
-		if column.Desc {
-			codec.ReverseComparableDatum(&list[i])
-		}
-	}
 	var hasNull bool
 	for _, v := range list {
 		if v.IsNull() {

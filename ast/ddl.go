@@ -105,7 +105,7 @@ type IndexColName struct {
 
 	Column *ColumnName
 	Length int
-	Order  bool
+	Desc   bool
 }
 
 // Accept implements Node Accept interface.

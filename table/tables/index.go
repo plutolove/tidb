@@ -89,6 +89,11 @@ func (c *indexIter) Next() (val []types.Datum, h int64, err error) {
 	if err != nil {
 		return nil, 0, errors.Trace(err)
 	}
+	for i, c := range c.idx.idxInfo.Columns {
+		if c.Desc {
+			codec.ReverseComparableDatum(&val[i])
+		}
+	}
 	return
 }
 
@@ -128,6 +133,13 @@ func (c *index) GenIndexKey(indexedValues []types.Datum, h int64) (key []byte, d
 				distinct = false
 				break
 			}
+		}
+	}
+
+	for i, column := range c.idxInfo.Columns {
+		if column.Desc {
+			codec.ReverseComparableDatum(&indexedValues[i])
+			break
 		}
 	}
 
@@ -281,6 +293,9 @@ func (c *index) FetchValues(r []types.Datum) ([]types.Datum, error) {
 		if ic.Offset < 0 || ic.Offset >= len(r) {
 			return nil, table.ErrIndexOutBound.Gen("Index column %s offset out of bound, offset: %d, row: %v",
 				ic.Name, ic.Offset, r)
+		}
+		if ic.Desc {
+			codec.ReverseComparableDatum(&r[ic.Offset])
 		}
 		vals[i] = r[ic.Offset]
 	}

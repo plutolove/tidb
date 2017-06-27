@@ -219,10 +219,14 @@ func (e *IndexReaderExecutor) Next() (*Row, error) {
 // Open implements the Executor Open interface.
 func (e *IndexReaderExecutor) Open() error {
 	fieldTypes := make([]*types.FieldType, len(e.index.Columns))
+	descIndex := []int{}
 	for i, v := range e.index.Columns {
 		fieldTypes[i] = &(e.table.Cols()[v.Offset].FieldType)
+		if v.Desc {
+			descIndex = append(descIndex, i)
+		}
 	}
-	kvRanges, err := indexRangesToKVRanges(e.ctx.GetSessionVars().StmtCtx, e.tableID, e.index.ID, e.ranges, fieldTypes)
+	kvRanges, err := indexRangesToKVRanges(e.ctx.GetSessionVars().StmtCtx, e.tableID, e.index.ID, e.ranges, fieldTypes, descIndex)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -236,7 +240,13 @@ func (e *IndexReaderExecutor) Open() error {
 
 // doRequestForDatums constructs kv ranges by datums. It is used by index look up executor.
 func (e *IndexReaderExecutor) doRequestForDatums(values [][]types.Datum, goCtx goctx.Context) error {
-	kvRanges, err := indexValuesToKVRanges(e.tableID, e.index.ID, values)
+	descIndex := []int{}
+	for i, v := range e.index.Columns{
+		if v.Desc {
+			descIndex = append(descIndex, i)
+		}
+	}
+	kvRanges, err := indexValuesToKVRanges(e.tableID, e.index.ID, values, descIndex)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -279,7 +289,16 @@ func (e *IndexLookUpExecutor) Open() error {
 	for i, v := range e.index.Columns {
 		fieldTypes[i] = &(e.table.Cols()[v.Offset].FieldType)
 	}
-	kvRanges, err := indexRangesToKVRanges(e.ctx.GetSessionVars().StmtCtx, e.tableID, e.index.ID, e.ranges, fieldTypes)
+
+	descIndex := []int{}
+	for i, column := range e.index.Columns {
+		if column.Desc {
+			descIndex = append(descIndex, i)
+			break
+		}
+	}
+
+	kvRanges, err := indexRangesToKVRanges(e.ctx.GetSessionVars().StmtCtx, e.tableID, e.index.ID, e.ranges, fieldTypes, descIndex)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -299,7 +318,14 @@ func (e *IndexLookUpExecutor) Open() error {
 
 // doRequestForDatums constructs kv ranges by datums. It is used by index look up executor.
 func (e *IndexLookUpExecutor) doRequestForDatums(values [][]types.Datum, goCtx goctx.Context) error {
-	kvRanges, err := indexValuesToKVRanges(e.tableID, e.index.ID, values)
+	descIndex := []int{}
+	for i, v := range e.index.Columns{
+		if v.Desc {
+			descIndex = append(descIndex, i)
+		}
+	}
+
+	kvRanges, err := indexValuesToKVRanges(e.tableID, e.index.ID, values, descIndex)
 	if err != nil {
 		return errors.Trace(err)
 	}

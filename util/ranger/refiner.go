@@ -95,6 +95,7 @@ func BuildIndexRange(sc *variable.StatementContext, tblInfo *model.TableInfo, in
 			}
 		}
 	}
+
 	return ranges, errors.Trace(rb.err)
 }
 

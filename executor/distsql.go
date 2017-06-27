@@ -157,9 +157,17 @@ func tableHandlesToKVRanges(tid int64, handles []int64) []kv.KeyRange {
 }
 
 // indexValuesToKVRanges will convert the index datums to kv ranges.
-func indexValuesToKVRanges(tid, idxID int64, values [][]types.Datum) ([]kv.KeyRange, error) {
+func indexValuesToKVRanges(tid, idxID int64, values [][]types.Datum, descIndex []int) ([]kv.KeyRange, error) {
 	krs := make([]kv.KeyRange, 0, len(values))
 	for _, vals := range values {
+		for _, desc := range descIndex {
+			for i, v := range vals {
+				if i == desc {
+					codec.ReverseComparableDatum(&v)
+				}
+			}
+		}
+
 		// TODO: We don't process the case that equal key has different types.
 		valKey, err := codec.EncodeKey(nil, vals...)
 		if err != nil {
@@ -171,7 +179,7 @@ func indexValuesToKVRanges(tid, idxID int64, values [][]types.Datum) ([]kv.KeyRa
 	return krs, nil
 }
 
-func indexRangesToKVRanges(sc *variable.StatementContext, tid, idxID int64, ranges []*types.IndexRange, fieldTypes []*types.FieldType) ([]kv.KeyRange, error) {
+func indexRangesToKVRanges(sc *variable.StatementContext, tid, idxID int64, ranges []*types.IndexRange, fieldTypes []*types.FieldType, descIndex []int) ([]kv.KeyRange, error) {
 	krs := make([]kv.KeyRange, 0, len(ranges))
 	for _, ran := range ranges {
 		err := convertIndexRangeTypes(sc, ran, fieldTypes)
@@ -179,6 +187,19 @@ func indexRangesToKVRanges(sc *variable.StatementContext, tid, idxID int64, rang
 			return nil, errors.Trace(err)
 		}
 
+		for _, desc := range descIndex {
+			for i, v := range ran.LowVal {
+				if i == desc {
+					codec.ReverseComparableDatum(&v)
+				}
+			}
+
+			for i, v := range ran.HighVal {
+				if i == desc {
+					codec.ReverseComparableDatum(&v)
+				}
+			}
+		}
 		low, err := codec.EncodeKey(nil, ran.LowVal...)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -656,11 +677,15 @@ func (e *XSelectIndexExec) doIndexRequest() (distsql.SelectResult, error) {
 		selIdxReq.GroupBy = e.byItems
 	}
 	fieldTypes := make([]*types.FieldType, len(e.index.Columns))
+	descIndex := []int{}
 	for i, v := range e.index.Columns {
 		fieldTypes[i] = &(e.table.Cols()[v.Offset].FieldType)
+		if v.Desc {
+			descIndex = append(descIndex, i)
+		}
 	}
 	sc := e.ctx.GetSessionVars().StmtCtx
-	keyRanges, err := indexRangesToKVRanges(sc, e.table.Meta().ID, e.index.ID, e.ranges, fieldTypes)
+	keyRanges, err := indexRangesToKVRanges(sc, e.table.Meta().ID, e.index.ID, e.ranges, fieldTypes, descIndex)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

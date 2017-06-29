@@ -160,6 +160,7 @@ func tableHandlesToKVRanges(tid int64, handles []int64) []kv.KeyRange {
 func indexValuesToKVRanges(tid, idxID int64, values [][]types.Datum, descIndex []int) ([]kv.KeyRange, error) {
 	krs := make([]kv.KeyRange, 0, len(values))
 	for _, vals := range values {
+		/*
 		for _, desc := range descIndex {
 			for i, v := range vals {
 				if i == desc {
@@ -167,6 +168,7 @@ func indexValuesToKVRanges(tid, idxID int64, values [][]types.Datum, descIndex [
 				}
 			}
 		}
+		*/
 
 		// TODO: We don't process the case that equal key has different types.
 		valKey, err := codec.EncodeKey(nil, vals...)
@@ -200,6 +202,7 @@ func indexRangesToKVRanges(sc *variable.StatementContext, tid, idxID int64, rang
 				}
 			}
 		}
+
 		low, err := codec.EncodeKey(nil, ran.LowVal...)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -548,6 +551,9 @@ func (e *XSelectIndexExec) indexRowToTableRow(handle int64, indexRow []types.Dat
 		}
 		for j, idxCol := range e.index.Columns {
 			if tblCol.Name.L == idxCol.Name.L {
+				if idxCol.Desc {
+					codec.ReverseComparableDatum(&indexRow[j])
+				}
 				tableRow[i] = indexRow[j]
 				break
 			}

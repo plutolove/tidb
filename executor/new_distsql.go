@@ -219,6 +219,7 @@ func (e *IndexReaderExecutor) Next() (*Row, error) {
 // Open implements the Executor Open interface.
 func (e *IndexReaderExecutor) Open() error {
 	fieldTypes := make([]*types.FieldType, len(e.index.Columns))
+
 	descIndex := []int{}
 	for i, v := range e.index.Columns {
 		fieldTypes[i] = &(e.table.Cols()[v.Offset].FieldType)

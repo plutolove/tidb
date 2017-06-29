@@ -32,7 +32,7 @@ import (
 	"github.com/pingcap/tidb/terror"
 	"github.com/pingcap/tidb/util"
 	"github.com/pingcap/tidb/util/types"
-	"github.com/pingcap/tidb/util/codec"
+	//"github.com/pingcap/tidb/util/codec"
 )
 
 const maxPrefixLength = 3072
@@ -436,9 +436,9 @@ func (d *ddl) fetchRowColVals(txn kv.Transaction, t table.Table, taskOpInfo *ind
 		for _, v := range idxInfo.Columns {
 			col := cols[v.Offset]
 			idxColumnVal := rowMap[col.ID]
-			if v.Desc {
-				codec.ReverseComparableDatum(&idxColumnVal)
-			}
+			//if v.Desc {
+			//	codec.ReverseComparableDatum(&idxColumnVal)
+			//}
 			if _, ok := rowMap[col.ID]; ok {
 				idxVal = append(idxVal, idxColumnVal)
 				continue
@@ -448,9 +448,9 @@ func (d *ddl) fetchRowColVals(txn kv.Transaction, t table.Table, taskOpInfo *ind
 				ret.err = errors.Trace(ret.err)
 				return nil, ret
 			}
-			if v.Desc {
-				codec.ReverseComparableDatum(&idxColumnVal)
-			}
+			//if v.Desc {
+			//	codec.ReverseComparableDatum(&idxColumnVal)
+			//}
 			idxVal = append(idxVal, idxColumnVal)
 		}
 		idxRecord.vals = idxVal

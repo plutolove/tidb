@@ -299,9 +299,11 @@ func (c *index) FetchValues(r []types.Datum) ([]types.Datum, error) {
 			return nil, table.ErrIndexOutBound.Gen("Index column %s offset out of bound, offset: %d, row: %v",
 				ic.Name, ic.Offset, r)
 		}
+		/*
 		if ic.Desc {
 			codec.ReverseComparableDatum(&r[ic.Offset])
 		}
+		*/
 		vals[i] = r[ic.Offset]
 	}
 	return vals, nil

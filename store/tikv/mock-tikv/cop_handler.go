@@ -551,12 +551,14 @@ func (h *rpcHandler) getIndexRowFromRange(ctx *selectContext, ran kv.KeyRange, l
 		return nil, nil
 	}
 
+	/*
 	for _, c := range idxInfo.Columns {
 		if c.GetDesc() {
 			ctx.descScan = !ctx.descScan
 			break
 		}
 	}
+	*/
 
 	var seekKey kv.Key
 	if ctx.descScan {
@@ -615,6 +617,20 @@ func (h *rpcHandler) getIndexRowFromRange(ctx *selectContext, ran kv.KeyRange, l
 			handle, err = decodeHandle(pair.Value)
 			if err != nil {
 				return nil, errors.Trace(err)
+			}
+		}
+		for _, c := range idxInfo.Columns {
+			if c.GetDesc() {
+				_, descDatum, err := codec.DecodeOne(values[c.GetColumnId()])
+				if err != nil {
+					return nil, errors.Trace(err)
+				}
+				codec.ReverseComparableDatum(&descDatum)
+				encodedDescDatum, err := codec.EncodeKey(nil, descDatum)
+				if err != nil {
+					return nil, errors.Trace(err)
+				}
+				values[c.GetColumnId()] = encodedDescDatum
 			}
 		}
 		row, err := h.valuesToRow(ctx, handle, values)

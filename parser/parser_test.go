@@ -93,7 +93,7 @@ func (s *testParserSuite) TestSimple(c *C) {
 		"enable", "disable", "reverse", "space", "privileges", "get_lock", "release_lock", "sleep", "no", "greatest", "least",
 		"binlog", "hex", "unhex", "function", "indexes", "from_unixtime", "processlist", "events", "less", "than", "timediff",
 		"ln", "log", "log2", "log10", "timestampdiff", "pi", "quote", "none", "super", "default", "shared", "exclusive",
-		"always",
+		"always", "tidb_version",
 	}
 	for _, kw := range unreservedKws {
 		src := fmt.Sprintf("SELECT %s FROM tbl;", kw)
@@ -627,6 +627,8 @@ func (s *testParserSuite) TestBuiltin(c *C) {
 
 		{`SELECT LOCATE('bar', 'foobarbar');`, true},
 		{`SELECT LOCATE('bar', 'foobarbar', 5);`, true},
+
+		{`SELECT tidb_version();`, true},
 
 		// for time fsp
 		{"CREATE TABLE t( c1 TIME(2), c2 DATETIME(2), c3 TIMESTAMP(2) );", true},
